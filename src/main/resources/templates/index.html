@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste de API Java/Spring (CRUD)</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        h1, h2 { color: #333; }
+        #form-criar, #lista-funcionarios { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; }
+        button:hover { background-color: #0056b3; }
+        .funcionario { border-bottom: 1px solid #eee; padding: 10px 0; }
+    </style>
+</head>
+<body>
+
+<h1>API Spring Boot - Teste Local</h1>
+
+<div id="form-criar">
+    <h2>1. Criar Novo Funcionário (POST)</h2>
+    <form id="criarFuncionarioForm">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" required value="João Dev">
+
+        <label for="cargo">Cargo:</label>
+        <input type="text" id="cargo" required value="Estágio Dev">
+
+        <label for="salario">Salário:</label>
+        <input type="number" id="salario" required value="1750.00">
+
+        <button type="submit">Enviar Dados (POST)</button>
+    </form>
+</div>
+
+<div id="lista-funcionarios">
+    <h2>2. Listar Funcionários (GET)</h2>
+    <button onclick="listarFuncionarios()">Buscar Lista (GET)</button>
+    <div id="output" style="margin-top: 20px;"></div>
+</div>
+
+<script>
+    // ENDEREÇO DA SUA API LOCAL
+    const API_URL = 'http://localhost:8080/api/funcionarios';
+
+    // ---------------------------------------------
+    // FUNÇÃO POST (CRIAR)
+    // ---------------------------------------------
+    document.getElementById('criarFuncionarioForm').addEventListener('submit', async (e) => {
+        e.preventDefault(); // Evita o recarregamento da página
+
+        const novoFuncionario = {
+            nome: document.getElementById('nome').value,
+            cargo: document.getElementById('cargo').value,
+            salario: parseFloat(document.getElementById('salario').value)
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(novoFuncionario)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                alert(`SUCESSO! Funcionário ID ${data.id} criado com sucesso.`);
+                listarFuncionarios(); // Atualiza a lista
+            } else {
+                alert('Erro ao criar funcionário. Verifique o console.');
+            }
+        } catch (error) {
+            console.error('Erro de conexão:', error);
+            alert('Erro de conexão com o Back-end (Verifique se o Spring está rodando!)');
+        }
+    });
+
+    // ---------------------------------------------
+    // FUNÇÃO GET (LISTAR)
+    // ---------------------------------------------
+    async function listarFuncionarios() {
+        const outputDiv = document.getElementById('output');
+        outputDiv.innerHTML = 'Carregando...';
+
+        try {
+            const response = await fetch(API_URL);
+            const funcionarios = await response.json();
+
+            if (funcionarios.length === 0) {
+                outputDiv.innerHTML = '<p>Nenhum funcionário cadastrado.</p>';
+                return;
+            }
+
+            let html = '<h3>Registros Encontrados:</h3>';
+            funcionarios.forEach(f => {
+                html += `
+                    <div class="funcionario">
+                        <strong>ID:</strong> ${f.id} |
+                        <strong>Nome:</strong> ${f.nome} |
+                        <strong>Cargo:</strong> ${f.cargo} |
+                        <strong>Salário:</strong> R$ ${f.salario.toFixed(2)}
+                    </div>
+                `;
+            });
+            outputDiv.innerHTML = html;
+
+        } catch (error) {
+            outputDiv.innerHTML = '<p style="color: red;">Erro ao buscar dados. Verifique o console e o CORS.</p>';
+            console.error('Erro na requisição GET:', error);
+        }
+    }
+</script>
+</body>
+</html>

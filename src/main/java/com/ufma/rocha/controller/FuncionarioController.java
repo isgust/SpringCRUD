@@ -10,6 +10,7 @@ import  java.util.Optional;
 
 @RestController
 @RequestMapping("/api/funcionarios")
+@CrossOrigin(origins = "*")
 public class FuncionarioController {
     @Autowired
     private FuncionarioRepository repository;
